@@ -1,0 +1,32 @@
+x-db-environment: &x-db-environment
+  POSTGRES_SSL_MODE: "disable"
+  POSTGRES_HOST: "db"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "db"
+  POSTGRES_PASSWORD: "myAwEsOm3pa55@w0rd"
+  POSTGRES_USER: "user"
+
+
+services:
+  db:
+    container_name: db
+    image: postgres:18.4-alpine
+    environment:
+      <<: *x-db-environment
+    volumes:
+      - db_data:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    networks:
+      app_network:
+        aliases:
+          - db.lvh.me
+
+
+networks:
+  app_network:
+    external: false
+
+
+volumes:
+  db_data: 
