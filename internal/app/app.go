@@ -6,10 +6,19 @@ import (
 	"os/signal"
 	"syscall"
 	"tenant-gate/config"
-	"tenant-gate/internal/restapi"
+	"tenant-gate/internal/controller/restapi"
+	"tenant-gate/internal/usecase"
 	"tenant-gate/pkg/httpserver"
+	"tenant-gate/pkg/jwt"
 	"tenant-gate/pkg/logger"
 	"tenant-gate/pkg/postgres"
+
+	tenantRepo "tenant-gate/internal/repo/persistent/tenant"
+	tenantUserRepo "tenant-gate/internal/repo/persistent/tenant_user"
+
+	userRepo "tenant-gate/internal/repo/persistent/user"
+	tenantUsecase "tenant-gate/internal/usecase/tenant"
+	userUsecase "tenant-gate/internal/usecase/user"
 )
 
 type servers struct {
@@ -39,13 +48,21 @@ func (s *servers) waitForShutdown() {
 	s.http.Shutdown()
 }
 
-func initServers(l logger.Interface, cfg *config.Config) servers {
+func initUseCases(pg *postgres.Postgres, jwtManager *jwt.Manager) *usecase.Manager {
+	// Initialize repositories
+	return &usecase.Manager{
+		Tenant: tenantUsecase.New(tenantRepo.New(pg)),
+		User:   userUsecase.New(userRepo.New(pg), tenantUserRepo.New(pg), jwtManager),
+	}
+}
+
+func initServers(l logger.Interface, cfg *config.Config, usecase *usecase.Manager, jwtManager *jwt.Manager) servers {
 	// Initialize the HTTP server
 	httpServer := httpserver.New(l,
 		httpserver.Port(cfg.Http.Port),
 		httpserver.Prefork(cfg.Http.UsePrefork),
 	)
-	restapi.NewRouter(httpServer.App, cfg, l)
+	restapi.NewRouter(httpServer.App, cfg, usecase, jwtManager, l)
 
 	return servers{http: httpServer}
 }
@@ -68,8 +85,14 @@ func Run(cfg *config.Config) {
 	}
 	defer pg.Pool.Close()
 
+	// Initialize JWT manager
+	jwtManager := jwt.New(cfg.Jwt.Secret, cfg.Jwt.TokenExpiry)
+
+	// Initialize use cases
+	usecases := initUseCases(pg, jwtManager)
+
 	// Initialize and start the HTTP server here
-	s := initServers(l, cfg)
+	s := initServers(l, cfg, usecases, jwtManager)
 	s.startServers()
 	s.waitForShutdown()
 }

@@ -1,10 +1,12 @@
 package entity
 
-import "time"
+import (
+	"time"
+)
 
 // Tenant -.
 type Tenant struct {
-	ID         string    `json:"id" example:"tenant-1"` // primary key
+	ID         int64     `json:"id,string"` // primary key
 	TenantName string    `json:"tenant_name" example:"Tenant Name"`
 	Email      string    `json:"email" example:"tenant@example.com"`
 	CreatedBy  string    `json:"created_by" example:"user-1"`
