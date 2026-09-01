@@ -3,7 +3,7 @@ x-db-environment: &x-db-environment
   POSTGRES_HOST: "db"
   POSTGRES_PORT: "5432"
   POSTGRES_DB: "db"
-  POSTGRES_PASSWORD: "myAwEsOm3pa55@w0rd"
+  POSTGRES_PASSWORD: "myAwEsOm3pa55w0rd"
   POSTGRES_USER: "user"
 
 

@@ -9,6 +9,7 @@ import (
 	"tenant-gate/internal/restapi"
 	"tenant-gate/pkg/httpserver"
 	"tenant-gate/pkg/logger"
+	"tenant-gate/pkg/postgres"
 )
 
 type servers struct {
@@ -52,6 +53,21 @@ func initServers(l logger.Interface, cfg *config.Config) servers {
 func Run(cfg *config.Config) {
 	// Initialize the logger
 	l := logger.New(cfg.Log.Level)
+
+	// Initialize the database connection
+	pg, err := postgres.New(postgres.BuildUrl(
+		cfg.Postgres.Host,
+		cfg.Postgres.Port,
+		cfg.Postgres.User,
+		cfg.Postgres.Pass,
+		cfg.Postgres.Name),
+		postgres.MaxPoolSize(cfg.Postgres.PoolMax),
+	)
+	if err != nil {
+		l.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
+	}
+	defer pg.Pool.Close()
+
 	// Initialize and start the HTTP server here
 	s := initServers(l, cfg)
 	s.startServers()

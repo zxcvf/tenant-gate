@@ -9,11 +9,11 @@ import (
 
 type (
 	Config struct {
-		App  app
-		Log  log
-		Http http
-		Pg   pg
-		Jwt  jwt
+		App      app
+		Log      log
+		Http     http
+		Postgres pg
+		Jwt      jwt
 	}
 
 	app struct {
@@ -31,8 +31,12 @@ type (
 	}
 
 	pg struct {
-		Host string `env:"PG_HOST" envDefault:"localhost"`
-		Port string `env:"PG_PORT" envDefault:"5432"`
+		Host    string `env:"PG_HOST" envDefault:"localhost"`
+		Port    string `env:"PG_PORT" envDefault:"5432"`
+		User    string `env:"PG_USER" envDefault:"postgres"`
+		Pass    string `env:"PG_PASS" envDefault:"postgres"`
+		Name    string `env:"PG_DB" envDefault:"db"`
+		PoolMax int    `env:"PG_POOL_MAX" envDefault:"4"`
 	}
 
 	jwt struct {
