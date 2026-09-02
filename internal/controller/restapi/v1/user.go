@@ -2,6 +2,7 @@ package v1
 
 import (
 	"net/http"
+	"tenant-gate/internal/controller/middleware"
 	"tenant-gate/internal/controller/restapi/v1/request"
 
 	"github.com/gofiber/fiber/v2"
@@ -31,11 +32,31 @@ func (r *Controller) login(ctx *fiber.Ctx) error {
 		return errorResponse(ctx, errInvalidRequestCode, errInvalidRequestMessage)
 	}
 
-	r.um.User.Login(ctx.UserContext(), body.TenantName, body.Email, body.Password)
+	token, err := r.um.User.Login(ctx.UserContext(), body.TenantName, body.Email, body.Password)
+	if err != nil {
+		r.logger.Error("Login failed: %v", err)
+		return errorResponse(ctx, errUnauthorizedCode, errUnauthorizedMessage)
+	}
 
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "Login successful",
-		"token":   "your-jwt-token", // Replace with actual token generation logic
+		"token":   token,
 	})
 
+}
+
+// @Summary     Get User Profile
+// @Description Get the profile of the authenticated user
+// @ID          profile
+// @Tags        user
+// @Produce     json
+// @Success     200     {object} response.UserProfile
+// @Failure     401     {object} response.Error
+// @Failure     500     {object} response.Error
+// @Router      /user/profile [get]
+func (r *Controller) profile(ctx *fiber.Ctx) error {
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "Profile fetched successful",
+		"user":    ctx.Locals(middleware.PayloadKey),
+	})
 }

@@ -3,7 +3,7 @@ package restapi
 import (
 	"net/http"
 	"tenant-gate/config"
-	"tenant-gate/internal/controller/restapi/middleware"
+	"tenant-gate/internal/controller/middleware"
 	v1 "tenant-gate/internal/controller/restapi/v1"
 	"tenant-gate/internal/usecase"
 	"tenant-gate/pkg/jwt"

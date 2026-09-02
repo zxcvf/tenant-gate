@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"tenant-gate/internal/controller/middleware"
 	"tenant-gate/internal/usecase"
 	"tenant-gate/pkg/jwt"
 	"tenant-gate/pkg/logger"
@@ -28,5 +29,11 @@ func NewRoutes(apiV1Group fiber.Router, um *usecase.Manager, jwtManager *jwt.Man
 	}
 
 	// protected routes
+	protected := apiV1Group.Group("", middleware.Auth(jwtManager))
+
+	userGroup := protected.Group("/user")
+	{
+		userGroup.Get("/profile", controller.profile)
+	}
 
 }

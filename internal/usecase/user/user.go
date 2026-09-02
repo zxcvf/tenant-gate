@@ -6,7 +6,6 @@ import (
 	"tenant-gate/pkg/jwt"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 )
 
 type UseCase struct {
@@ -44,8 +43,16 @@ func (u *UseCase) Login(ctx context.Context, tenantName, email, password string)
 	}
 
 	// todo: generate jwt token
-	log.Debug(tn)
-	return "token", nil
+	c := jwt.NewUserClaims(
+		tn.UserID, user.Email, user.Username, tn.TenantID, tenantName, tn.RoleCode,
+	)
+
+	token, err := u.jwt.GenerateToken(c)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
 
 func (u *UseCase) GetUserByID(ctx context.Context, userID string) (string, error) {

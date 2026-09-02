@@ -14,13 +14,18 @@ func TestJWT_GenerateAndParse(t *testing.T) {
 
 	j := jwt.New("test-secret", time.Hour)
 
-	token, err := j.GenerateToken("user-123")
+	c := jwt.NewUserClaims(
+		12983719827, "user@example.com", "John Doe", 1, "TenantName", 1,
+	)
+
+	token, err := j.GenerateToken(c)
 	require.NoError(t, err)
 	assert.NotEmpty(t, token)
 
-	userID, err := j.ParseToken(token)
+	c2, err := j.ParseToken(token)
+
 	require.NoError(t, err)
-	assert.Equal(t, "user-123", userID)
+	assert.Equal(t, *c, *c2)
 }
 
 func TestJWT_ParseToken_Invalid(t *testing.T) {
@@ -38,7 +43,9 @@ func TestJWT_ParseToken_WrongSecret(t *testing.T) {
 	j1 := jwt.New("secret-1", time.Hour)
 	j2 := jwt.New("secret-2", time.Hour)
 
-	token, err := j1.GenerateToken("user-123")
+	token, err := j1.GenerateToken(jwt.NewUserClaims(
+		12983719827, "user@example.com", "John Doe", 1, "TenantName", 1,
+	))
 	require.NoError(t, err)
 
 	_, err = j2.ParseToken(token)
@@ -50,7 +57,9 @@ func TestJWT_ParseToken_Expired(t *testing.T) {
 
 	j := jwt.New("test-secret", -time.Hour)
 
-	token, err := j.GenerateToken("user-123")
+	token, err := j.GenerateToken(jwt.NewUserClaims(
+		12983719827, "user@example.com", "John Doe", 1, "TenantName", 1,
+	))
 	require.NoError(t, err)
 
 	_, err = j.ParseToken(token)
