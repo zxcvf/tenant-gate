@@ -1,9 +1,7 @@
 package redis
 
 import (
-	"context"
 	"crypto/tls"
-	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"

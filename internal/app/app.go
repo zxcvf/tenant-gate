@@ -97,7 +97,7 @@ func Run(cfg *config.Config) {
 	jwtManager := jwt.New(cfg.Jwt.Secret, cfg.Jwt.TokenExpiry)
 
 	// Initialize use cases
-	usecases := initUseCases(pg, redis, jwtManager)
+	usecases := initUseCases(pg, r, jwtManager)
 
 	// Initialize and start the HTTP server here
 	s := initServers(l, cfg, usecases, jwtManager)
