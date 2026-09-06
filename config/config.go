@@ -39,6 +39,13 @@ type (
 		PoolMax int    `env:"PG_POOL_MAX" envDefault:"4"`
 	}
 
+	redis struct {
+		Host     string `env:"REDIS_HOST" envDefault:"localhost"`
+		Port     string `env:"REDIS_PORT" envDefault:"6379"`
+		Password string `env:"REDIS_PASSWORD" envDefault:""`
+		DB       int    `env:"REDIS_DB" envDefault:"0"`
+	}
+
 	jwt struct {
 		Secret      string        `env:"JWT_SECRET" envDefault:"JWT_SECRET"`
 		TokenExpiry time.Duration `env:"JWT_TOKEN_EXPIRY" envDefault:"24h"`

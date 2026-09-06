@@ -12,6 +12,7 @@ import (
 	"tenant-gate/pkg/jwt"
 	"tenant-gate/pkg/logger"
 	"tenant-gate/pkg/postgres"
+	"tenant-gate/pkg/redis"
 
 	tenantRepo "tenant-gate/internal/repo/persistent/tenant"
 	tenantUserRepo "tenant-gate/internal/repo/persistent/tenant_user"
@@ -48,7 +49,7 @@ func (s *servers) waitForShutdown() {
 	s.http.Shutdown()
 }
 
-func initUseCases(pg *postgres.Postgres, jwtManager *jwt.Manager) *usecase.Manager {
+func initUseCases(pg *postgres.Postgres, r *redis.Redis, jwtManager *jwt.Manager) *usecase.Manager {
 	// Initialize repositories
 	return &usecase.Manager{
 		Tenant: tenantUsecase.New(tenantRepo.New(pg)),
@@ -85,11 +86,18 @@ func Run(cfg *config.Config) {
 	}
 	defer pg.Pool.Close()
 
+	// Initialize the redis connection
+	r, err := redis.New()
+	if err != nil {
+		l.Fatal(fmt.Errorf("app - Run - redis.New: %w", err))
+	}
+	defer r.Client.Close()
+
 	// Initialize JWT manager
 	jwtManager := jwt.New(cfg.Jwt.Secret, cfg.Jwt.TokenExpiry)
 
 	// Initialize use cases
-	usecases := initUseCases(pg, jwtManager)
+	usecases := initUseCases(pg, redis, jwtManager)
 
 	// Initialize and start the HTTP server here
 	s := initServers(l, cfg, usecases, jwtManager)

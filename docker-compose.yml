@@ -21,12 +21,22 @@ services:
       app_network:
         aliases:
           - db.lvh.me
-
+  redis:
+    container_name: redis
+    image: redis:7.4-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning
+    networks:
+      app_network:
+        aliases:
+          - redis.lvh.me
 
 networks:
   app_network:
     external: false
 
-
 volumes:
   db_data: 
+  redis-data:
